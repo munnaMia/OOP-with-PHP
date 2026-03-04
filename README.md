@@ -39,10 +39,49 @@ But, since every animal sounds different, you leave the "how" up to the child cl
 
 - Visibility: The signature (arguments) of the method in the child must match the parent.
 
-
 ## What is a Value Object?
-A Value Object is a small object that represents a simple entity whose identity is defined by its value, not a unique ID.
 
-- `Entity` (Not a Value Object): A User. If a user changes their name, they are still the same person (same ID).
+A Value Object is a small object that represents a simple entity whose identity is defined by its value, not a unique ID
 
-- `Value` `Object`: An Address or Money. If you change "$5" to "$10", it’s no longer the same "thing." It’s a completely different value.
+- `Entity (Not a Value Object):` A User. If a user changes their name, they are still the same person (same ID).
+
+- `Value Object:` An Address or Money. If you change "$5" to "$10", it’s no longer the same "thing." It’s a completely different value.
+
+### The Concept of Immutability
+
+Immutability means that once an object is created, it cannot be changed.
+
+In standard OOP, we use "Setters" (Mutable). In Value Objects, we throw setters away. If you want to change the value, you must create a brand new object.
+
+- Why use Immutability?
+  Thread Safety: No other part of your code can "accidentally" change your object's data.
+
+- Predictability: If you pass an Email object to a function, you are 100% sure that function won't change the email address behind your back.
+
+- Validation: Since the value is set in the constructor and never changed, the object is always valid
+
+```php
+
+<?php
+readonly class Price {
+    public function __construct(
+        public int $amount,
+        public string $currency = 'USD'
+    ) {
+        if ($amount < 0) {
+            throw new Exception("Price cannot be negative!");
+        }
+    }
+
+    // To "change" the price, we return a NEW object
+    public function add(int $extraAmount): Price {
+        return new Price($this->amount + $extraAmount, $this->currency);
+    }
+}
+
+$fiveBucks = new Price(500); // $5.00
+$tenBucks = $fiveBucks->add(500); // Returns a NEW object
+
+echo $fiveBucks->amount; // Still 500 (Original is untouched!)
+echo $tenBucks->amount;  // 1000
+```
